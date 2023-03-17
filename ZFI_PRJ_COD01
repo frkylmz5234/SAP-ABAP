@@ -1,0 +1,346 @@
+*&---------------------------------------------------------------------*
+*& Report  ZFI_PRJ_COD01
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  zfi_prj_cod01.
+TYPES: BEGIN OF ty_kna1,
+         kunnr TYPE kna1-kunnr,
+         name1 TYPE kna1-name1,
+       END OF ty_kna1.
+DATA: gt_kna1 TYPE TABLE OF ty_kna1,
+      gs_kna1 TYPE ty_kna1.
+** KNA1  : MÜÞTERÝ ANA VERÝ TABLOSU
+** BSID  : MÜÞTERÝ AÇIK KALEM TABLOSU
+** KUNNR : MÜÞTERÝ NUMARASI
+** BUKRS : ÞÝRKET KODU
+** BUDAT : BELGE TARÝHÝ
+** DMBTR : ULUSAL PARA BÝRÝMÝ CÝNSÝNDEN TUTAR
+** ZFBDT : VADE HESAPLAMA OLUÞTURAN TARÝH
+
+
+
+
+
+TYPES: BEGIN OF ty_bsid,
+         kunnr TYPE bsid-kunnr,
+         dmbtr TYPE bsid-dmbtr,
+         bukrs TYPE bsid-bukrs,
+         zfbdt TYPE bsid-zfbdt,
+         zbd1t TYPE bsid-zbd1t,
+         zbd2t TYPE bsid-zbd2t,
+         budat TYPE bsid-budat,
+       END OF ty_bsid.
+DATA: gt_bsid TYPE TABLE OF ty_bsid,
+      gs_bsid TYPE ty_bsid.
+
+TYPES: BEGIN OF  ty_vade,
+         kunnr TYPE bsid-kunnr,
+         dmbtr TYPE bsid-dmbtr,
+         bukrs TYPE bsid-bukrs,
+         zfbdt TYPE bsid-zfbdt,
+         zbd1t TYPE bsid-zbd1t,
+         zbd2t TYPE bsid-zbd2t,
+         budat TYPE bsid-budat,
+         vade  TYPE mark,
+       END OF ty_vade.
+DATA: gt_vade TYPE TABLE OF ty_vade,
+      gs_vade TYPE ty_vade.
+
+TYPES: BEGIN OF ty_collect,
+         bukrs           TYPE bsid-bukrs,
+         kunnr           TYPE bsid-kunnr,
+         dmbtr           TYPE bsid-dmbtr,
+         gun_dmbtr       TYPE bsid-dmbtr,
+         onbes_dmbtr     TYPE bsid-dmbtr,
+         otuz_dmbtr      TYPE bsid-dmbtr,
+         altmisbir_dmbtr TYPE bsid-dmbtr,
+         vade            TYPE mark,
+
+       END OF ty_collect.
+DATA: gt_collect TYPE TABLE OF ty_collect,
+      gs_collect TYPE ty_collect.
+
+
+
+DATA: gt_muhasebe TYPE TABLE OF zfi_prj_tb03,
+      gs_muhasebe TYPE zfi_prj_tb03.
+
+
+
+DATA: gt_tbl01 TYPE TABLE OF zfi_prj_tb01,
+      gs_tbl01 TYPE zfi_prj_tb01.
+DATA: gt_tbl02 TYPE TABLE OF zfi_prj_tb02,
+      gs_tbl02 TYPE zfi_prj_tb02.
+
+
+
+
+
+
+
+
+TABLES: bsid.
+
+SELECTION-SCREEN BEGIN OF BLOCK al WITH FRAME TITLE TEXT-001.
+  SELECT-OPTIONS: s_budat FOR bsid-budat,
+                  s_bukrs FOR bsid-bukrs.
+  PARAMETERS: p_budat TYPE bsid-budat OBLIGATORY.
+SELECTION-SCREEN END OF BLOCK al.
+
+
+
+
+
+START-OF-SELECTION.
+  PERFORM get_data.
+
+END-OF-SELECTION.
+
+*&---------------------------------------------------------------------*
+*&      Form  get_data
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM get_data.
+  SELECT kunnr name1
+    FROM kna1
+    INTO TABLE gt_kna1.
+
+
+
+  DATA: lv_vade LIKE sy-datum.
+  DATA: lv_tarih LIKE sy-datum.
+  DATA: lv_oncekigun LIKE sy-datum.
+  DATA: lv_onbesgun LIKE sy-datum.
+  DATA: lv_otuzgun LIKE sy-datum.
+  DATA: lv_altmisbirgun LIKE sy-datum.
+
+  lv_oncekigun = p_budat - 1.
+  lv_onbesgun = p_budat - 15.
+  lv_otuzgun = p_budat - 30.
+  lv_altmisbirgun = p_budat - 61.
+
+
+
+
+
+  SELECT kunnr dmbtr bukrs zfbdt zbd1t zbd2t budat
+    FROM bsid
+    INTO TABLE gt_bsid
+    WHERE bukrs IN s_bukrs
+    AND  budat IN s_budat.
+
+
+  LOOP AT gt_bsid INTO gs_bsid.
+    MOVE-CORRESPONDING gs_bsid TO gs_vade.
+    lv_vade = gs_vade-budat +  gs_vade-zbd1t + gs_vade-zbd2t .
+    IF lv_vade LT sy-datum.
+      gs_vade-vade = 'X'.
+
+    ENDIF.
+
+
+    IF gs_vade-vade = 'X' .
+      MOVE-CORRESPONDING gs_vade TO gs_collect.
+      IF lv_oncekigun EQ lv_vade.
+        gs_collect-gun_dmbtr = gs_vade-dmbtr.
+
+      ENDIF.
+      IF lv_onbesgun LE lv_vade.
+        gs_collect-onbes_dmbtr = gs_vade-dmbtr.
+
+      ENDIF.
+      IF lv_otuzgun LE lv_vade.
+        gs_collect-otuz_dmbtr = gs_vade-dmbtr.
+
+      ENDIF.
+      IF lv_altmisbirgun LE lv_vade.
+        gs_collect-altmisbir_dmbtr = gs_vade-dmbtr.
+
+      ENDIF.
+
+
+      COLLECT gs_collect INTO gt_collect.
+
+    ENDIF.
+
+    CLEAR: gs_collect,
+           gs_vade,
+           gs_bsid,
+           lv_tarih.
+
+  ENDLOOP.
+
+
+
+  CLEAR: gt_tbl01[],
+         gs_tbl01.
+
+  SELECT * FROM zfi_prj_tb02
+           INTO TABLE gt_tbl02.
+
+  SELECT * FROM zfi_prj_tb03
+           INTO TABLE gt_muhasebe.
+
+  LOOP AT gt_collect INTO gs_collect.
+    gs_tbl01-bukrs = gs_collect-bukrs.
+    gs_tbl01-zz_musteri_id = gs_collect-kunnr.
+    gs_tbl01-zz_vdolan_b = gs_collect-dmbtr.
+
+    READ TABLE gt_kna1 INTO gs_kna1 WITH KEY kunnr = gs_collect-kunnr.
+    IF sy-subrc EQ 0.
+      gs_tbl01-zz_musteri_tnm = gs_kna1-name1.
+
+    ENDIF.
+
+    READ TABLE gt_muhasebe INTO gs_muhasebe WITH KEY kunnr = gs_collect-kunnr  bukrs = gs_collect-bukrs.
+    IF sy-subrc EQ 0.
+      gs_tbl01-zz_muhasebe_tel = gs_muhasebe-telf1.
+      gs_tbl01-zz_eposta = gs_muhasebe-smtp_addr.
+      gs_tbl01-zz_muhasebe = gs_muhasebe-zz_muhasebe.
+      gs_tbl01-zz_musteri_konum = gs_muhasebe-zz_musteri_konum.
+
+    ENDIF.
+
+
+
+
+
+    READ TABLE gt_tbl02 INTO gs_tbl02 WITH KEY zz_cre_kural = 'ZCR0001'.
+    IF sy-subrc EQ 0.
+      IF gs_collect-gun_dmbtr GT gs_tbl02-zz_cre_tutar1.
+        gs_tbl01-zz_credibilite = gs_tbl01-zz_credibilite + gs_tbl02-zz_cre_puan.
+
+      ENDIF.
+
+    ENDIF.
+
+    READ TABLE gt_tbl02 INTO gs_tbl02 WITH KEY zz_cre_kural = 'ZCR0002'.
+    IF sy-subrc EQ 0.
+      IF gs_collect-onbes_dmbtr GT gs_tbl02-zz_cre_tutar1.
+        gs_tbl01-zz_credibilite = gs_tbl01-zz_credibilite + gs_tbl02-zz_cre_puan.
+
+      ENDIF.
+
+    ENDIF.
+
+
+    READ TABLE gt_tbl02 INTO gs_tbl02 WITH KEY zz_cre_kural = 'ZCR0003'.
+    IF sy-subrc EQ 0.
+      IF gs_collect-otuz_dmbtr GT gs_tbl02-zz_cre_tutar1.
+        gs_tbl01-zz_credibilite = gs_tbl01-zz_credibilite + gs_tbl02-zz_cre_puan.
+
+      ENDIF.
+
+    ENDIF.
+
+
+    READ TABLE gt_tbl02 INTO gs_tbl02 WITH KEY zz_cre_kural = 'ZCR0004'.
+    IF sy-subrc EQ 0.
+      IF gs_collect-gun_dmbtr GE gs_tbl02-zz_cre_tutar1 AND gs_collect-gun_dmbtr LE gs_tbl02-zz_cre_tutar2.
+        gs_tbl01-zz_credibilite = gs_tbl01-zz_credibilite + gs_tbl02-zz_cre_puan.
+
+      ENDIF.
+
+    ENDIF.
+
+
+    READ TABLE gt_tbl02 INTO gs_tbl02 WITH KEY zz_cre_kural = 'ZCR0005'.
+    IF sy-subrc EQ 0.
+      IF gs_collect-onbes_dmbtr GE gs_tbl02-zz_cre_tutar1 AND gs_collect-onbes_dmbtr LE gs_tbl02-zz_cre_tutar2.
+        gs_tbl01-zz_credibilite = gs_tbl01-zz_credibilite + gs_tbl02-zz_cre_puan.
+
+      ENDIF.
+
+    ENDIF.
+
+
+    READ TABLE gt_tbl02 INTO gs_tbl02 WITH KEY zz_cre_kural = 'ZCR0006'.
+    IF sy-subrc EQ 0.
+      IF gs_collect-altmisbir_dmbtr GT gs_tbl02-zz_cre_tutar1.
+        gs_tbl01-zz_credibilite = gs_tbl01-zz_credibilite + gs_tbl02-zz_cre_puan.
+
+      ENDIF.
+
+    ENDIF.
+
+
+    READ TABLE gt_tbl02 INTO gs_tbl02 WITH KEY zz_cre_kural = 'ZCR0007'.
+    IF sy-subrc EQ 0.
+      IF gs_collect-altmisbir_dmbtr GE gs_tbl02-zz_cre_tutar1 AND gs_collect-altmisbir_dmbtr LE gs_tbl02-zz_cre_tutar2.
+        gs_tbl01-zz_credibilite = gs_tbl01-zz_credibilite + gs_tbl02-zz_cre_puan.
+
+      ENDIF.
+
+    ENDIF.
+
+
+    READ TABLE gt_tbl02 INTO gs_tbl02 WITH KEY zz_cre_kural = 'ZCR0008'.
+    IF sy-subrc EQ 0.
+      IF gs_collect-otuz_dmbtr GE gs_tbl02-zz_cre_tutar1 AND gs_collect-otuz_dmbtr LE gs_tbl02-zz_cre_tutar2.
+        gs_tbl01-zz_credibilite = gs_tbl01-zz_credibilite + gs_tbl02-zz_cre_puan.
+
+      ENDIF.
+
+    ENDIF.
+
+
+
+    READ TABLE gt_tbl02 INTO gs_tbl02 WITH KEY zz_cre_kural = 'ZCR0009'.
+    IF sy-subrc EQ 0.
+      IF gs_collect-dmbtr GE gs_tbl02-zz_cre_tutar1.
+        gs_tbl01-zz_credibilite = gs_tbl01-zz_credibilite + gs_tbl02-zz_cre_puan.
+
+      ENDIF.
+
+    ENDIF.
+
+
+    READ TABLE gt_tbl02 INTO gs_tbl02 WITH KEY zz_cre_kural = 'ZCR0010'.
+    IF sy-subrc EQ 0.
+      IF gs_collect-dmbtr GE gs_tbl02-zz_cre_tutar1 AND gs_collect-dmbtr LE gs_tbl02-zz_cre_tutar2.
+        gs_tbl01-zz_credibilite = gs_tbl01-zz_credibilite + gs_tbl02-zz_cre_puan.
+
+      ENDIF.
+
+    ENDIF.
+
+    IF gs_tbl01-zz_credibilite IS INITIAL.
+             gs_tbl01-zz_credibilite = 5.
+
+    ENDIF.
+
+
+
+
+
+    IF gs_tbl01-zz_credibilite LE 35.
+      gs_tbl01-zz_hesapdrm = 030.
+    ELSEIF   gs_tbl01-zz_credibilite LE 90.
+      gs_tbl01-zz_hesapdrm = 020.
+    ELSE .
+      gs_tbl01-zz_hesapdrm = 010.
+    ENDIF.
+
+
+
+
+    APPEND gs_tbl01 TO gt_tbl01.
+    CLEAR gs_tbl01.
+
+
+
+  ENDLOOP.
+
+  MODIFY zfi_prj_tb01 FROM TABLE gt_tbl01.
+
+
+
+
+  BREAK-POINT.
+
+ENDFORM.                    "get_data
