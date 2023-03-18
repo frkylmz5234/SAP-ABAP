@@ -1,8 +1,13 @@
 ### Selamlar
- Bu program kodlarında,**SAP ABAP** üzerinde üretim yapan bir markanın,toptan satış yaptığı firmalara geriye dönük ödemeler(vade) noktasında verilen kurallar ile birlikte firmaların risk durumu tespiti yapacağız.Sonrasında yüksek riskden düşüğe  doğru **ALV'de**  raporlamasını yapacağız.
+ Bu program kodlarında,**SAP ABAP** üzerinde üretim yapan bir markanın,toptan satış yaptığı firmalara geriye dönük ödemeler(vade) noktasında verilen kurallar ile birlikte firmaların risk durumu tespiti yapacağız.Sonrasında yüksek riskden düşüğe  doğru **ALV'de**  raporlamasını yapacağız.Öncelikle SE11,SE38,SM30 ve Reuse-ALV'lerin neler olduğunu hatırlayalım.
+
+- **SE11 (Data Dictionary):** Veri modellerini oluşturmak ve yönetmek için kullanılan bir araçtır. 
+- **SE38 (ABAP Editor):** ABAP kodu yazmak, düzenlemek ve test etmek için kullanılan bir araçtır.
+- **SM30 (Table Maintenance Generator):** Bu araç, veri tablolarının veri girişine ve bakımına yönelik ekranları oluşturmak için kullanılır.
+- **Reuse-ALV :** SAP sistemi için önceden tanımlanmış bir ALV sınıfıdır ve ALV tablolarını oluşturma ve yönetme sürecini kolaylaştırır.
 
 
-- Öncelikle [`ZFI_PRJ_TB01`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_TB01.png) bakım tablomuzun fiziksel veri tabanının içinde nesnelerimiz tanımlandı.
+- İlk olarak [`ZFI_PRJ_TB01`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_TB01.png) bakım tablomuzun fiziksel veri tabanının içinde nesnelerimiz tanımlandı.
 - İkinci adımda ise [`ZFI_PRJ_TB02`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_TB02.png) kurallar tablomuzu oluşturduk.
 - Üçüncü tablomuz olan [`ZFI_PRJ_TB03`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_TB03.png)'de muhasebeci bilgilerinin bulunacağı veri tabanını oluşturduk.
 - Sonrasında ise `SM30`'da [`Muhasebeci Tablosu`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_TB03.XLSX) ve [`Kurallar Tablosu`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_TB02.XLSX) 'nu veriler ile doldurma işlemi gerçekleştirildi.
@@ -111,6 +116,9 @@ Bu kod, `gt_tbl02"` tablosundan belirli bir kurala sahip satırları okur ve bel
 
 
 - Son olarak **SE38**'de [`ZFI_PRJ_COD02`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_COD02)'de **ALV** raporlama işlemi yapılacaktır.
+
+- **Structure**, bir ALV tablosundaki her bir sütunun veri yapısını ve diğer özelliklerini belirleyen bir yapıdır.Her bir sütun, Structure içinde bir alan olarak tanımlanır ve daha sonra ALV tablosuna eklenir.
+- ALV içinde ilk olarak [`ZFI_PRJ_ALV01 STRUCTURE`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_ALV01%20STRUCTURE.png) tanımlaması yapıldı.
 
 ### Giriş Parametresi
 
