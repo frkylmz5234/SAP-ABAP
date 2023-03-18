@@ -1,5 +1,5 @@
 ### Selamlar
- Bu program kodlarında,**SAP ABAP** üzerinde üretim yapan bir markanın,toptan satış yaptığı firmalara geriye dönük ödemeler(vade) noktasında verilen kurallar ile birlikte firmaların risk durumu tespiti yapacağız.Sonrasında yüksek riskden düşüğe  doğru **ALV'de**  raporlamasını yapacağız.Öncelikle SE11,SE38,SM30 ve Reuse-ALV'lerin neler olduğunu hatırlayalım.
+ Bu program kodlarında,**SAP ABAP** üzerinde üretim yapan bir markanın,toptan satış yaptığı firmalara geriye dönük ödemeler(vade) noktasında verilen kurallar ile birlikte firmaların risk durumu tespiti yapacağız.Sonrasında yüksek riskden düşüğe  doğru **ALV'de**  raporlamasını yapacağız.Öncelikle `SE11`,`SE38`,`SM30 `ve `Reuse-ALV`'lerin neler olduğunu hatırlayalım.
 
 - **SE11 (Data Dictionary):** Veri modellerini oluşturmak ve yönetmek için kullanılan bir araçtır. 
 - **SE38 (ABAP Editor):** ABAP kodu yazmak, düzenlemek ve test etmek için kullanılan bir araçtır.
