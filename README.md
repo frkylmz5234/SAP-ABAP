@@ -6,13 +6,13 @@
 - **SM30 (Table Maintenance Generator):** Bu araç, veri tablolarının veri girişine ve bakımına yönelik ekranları oluşturmak için kullanılır.
 - **Reuse-ALV :** SAP sistemi için önceden tanımlanmış bir ALV sınıfıdır ve ALV tablolarını oluşturma ve yönetme sürecini kolaylaştırır.
 
-
+****
 - İlk olarak [`ZFI_PRJ_TB01`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_TB01.png) bakım tablomuzun fiziksel veri tabanının içinde nesnelerimiz tanımlandı.
 - İkinci adımda ise [`ZFI_PRJ_TB02`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_TB02.png) kurallar tablomuzu oluşturduk.
 - Üçüncü tablomuz olan [`ZFI_PRJ_TB03`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_TB03.png)'de muhasebeci bilgilerinin bulunacağı veri tabanını oluşturduk.
 - Sonrasında ise `SM30`'da [`Muhasebeci Tablosu`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_TB03.XLSX) ve [`Kurallar Tablosu`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_TB02.XLSX) 'nu veriler ile doldurma işlemi gerçekleştirildi.
 
-
+### 
 **Kurallar Tablosu'nun** içinde firmaların hangi şartlar üzerinden değerlendirileceği,açıklaması ve ceza puanı verileri `SM30`'da girilmiştir.
 
 **Muhasebeci Tablosun'da** her firmanın kendine ait  iletişim ile ilgili verileri `SM30`'da girilmiştir.
@@ -20,7 +20,7 @@
 Tabloların oluşumu ve içine veri girme işlemleri bittikten sonra `SE38`'de koz yazımına geçildi.
 
 - İlk olarak `SE38`'de [`ZFI_PRJ_COD01`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_COD01)'de oluşturulan veriler ve tablolar arasında gerekli işlemlerin yazıldığı kod kısmıdır.
-
+### 
 ### VADE HESAPLAMA
 ```
 DATA: lv_vade LIKE sy-datum.
@@ -51,10 +51,10 @@ DATA: lv_vade LIKE sy-datum.
 
     ENDIF.
 ```
-
+### 
 İlk önce bazı veri türlerinde değişkenler tanımlanır. Ardından, **bsid** tablosundan` s_bukrs` ve `s_budat` aralığında veriler seçilir ve `gt_bsid` tablosuna atılır.Daha sonra `gt_bsid` tablosundaki her bir kayıt için, birkaç değişkene veriler atanır ve bir koşul kontrol edilir.
 
-
+### 
 
 
 ```
@@ -89,10 +89,12 @@ IF gs_vade-vade = 'X' .
 
   ENDLOOP.
 ```
+### 
 Eğer `lv_vade` adlı değişken, şimdiki tarihten küçükse (geçmiş bir tarihse), o zaman `gs_vade` adlı yapıda yer alan vade alanına "X" ataması yapılır.
 Eğer vade alanı "X" olarak işaretlenmişse, bu kayıt için belirli bir koşul sağlanmış demektir. Bu durumda, bu kaydın bazı bilgileri, `gs_collect` adlı yapıya aktarılır.
 Daha sonra, `gs_collect` adlı yapı, belirli tarih aralıklarına göre ayrılır ve her aralık için, o aralıktaki toplam **dmbtr** (Alacak/Borç Tutarı) hesaplanır ve ilgili değişkene atanır.
 Son olarak, hesaplanan bilgiler, `gt_collect` adlı tabloya eklenir.
+****
 
 
 
@@ -113,7 +115,8 @@ Son olarak, hesaplanan bilgiler, `gt_collect` adlı tabloya eklenir.
 Bu kod, `gt_tbl02"` tablosundan belirli bir kurala sahip satırları okur ve belirli bir koşulu karşıladıklarında, `gs_tbl01-zz_credibilite` değişkenine ek bir puan ekler.Böyle toplam 10 kural mevcuttur.
 
 
-
+### 
+****
 
 - Son olarak **SE38**'de [`ZFI_PRJ_COD02`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_COD02)'de **ALV** raporlama işlemi yapılacaktır.
 
@@ -131,9 +134,10 @@ SELECTION-SCREEN END OF BLOCK al.
 Bu kod, programın kullanıcı tarafından belirlenen bir tarih değerine göre çalışmasını sağlar ve kullanıcının bu tarihi girmesi için bir seçim ekranı oluşturur.Ayrıca, "**OBLIGATORY**" özelliği belirtilerek, kullanıcının bu parametreyi girme zorunluluğu getirilir.
 
 
-
+### 
+****
 - **'DD_DOMVALUES_GET'** fonksiyonu ile bir **ALV** raporundaki hesaplar bölümünü görselleştirmek için kullanılabilir.Aşşağıda ki kodda `gt_hesapdrm` değişkeninde ki sayısal değerlerin tanımı `hesapdrm_tnm` adlı değişkene atanarak kullanılmıştır.
-
+### 
 ```
  CALL FUNCTION 'DD_DOMVALUES_GET'
     EXPORTING
@@ -155,7 +159,8 @@ Bu kod, programın kullanıcı tarafından belirlenen bir tarih değerine göre 
 ```
 
 
-
+****
+### 
 ### OUTPUT
  Veriler gerçek veri değildir!!!
 - Son olarakda yazılan kodun çıktısı olan,firmaların yüksek riskten düşük riske doğru sıralanmış ALV gösterimi:
