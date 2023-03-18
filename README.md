@@ -16,9 +16,8 @@ Tabloların oluşumu ve içine veri girme işlemleri bittikten sonra `SE38`'de k
 
 - İlk olarak `SE38`'de [`ZFI_PRJ_COD01`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_COD01)'de oluşturulan veriler ve tablolar arasında gerekli işlemlerin yazıldığı kod kısmıdır.
 
-
+### VADE HESAPLAMA
 ```
-
 DATA: lv_vade LIKE sy-datum.
   DATA: lv_tarih LIKE sy-datum.
   DATA: lv_oncekigun LIKE sy-datum.
@@ -30,9 +29,6 @@ DATA: lv_vade LIKE sy-datum.
   lv_onbesgun = p_budat - 15.
   lv_otuzgun = p_budat - 30.
   lv_altmisbirgun = p_budat - 61.
-
-
-
 
 
   SELECT kunnr dmbtr bukrs zfbdt zbd1t zbd2t budat
@@ -49,9 +45,15 @@ DATA: lv_vade LIKE sy-datum.
       gs_vade-vade = 'X'.
 
     ENDIF.
+```
+
+İlk önce bazı veri türlerinde değişkenler tanımlanır. Ardından, **bsid** tablosundan` s_bukrs` ve `s_budat` aralığında veriler seçilir ve `gt_bsid` tablosuna atılır.Daha sonra `gt_bsid` tablosundaki her bir kayıt için, birkaç değişkene veriler atanır ve bir koşul kontrol edilir.
 
 
-    IF gs_vade-vade = 'X' .
+
+
+```
+IF gs_vade-vade = 'X' .
       MOVE-CORRESPONDING gs_vade TO gs_collect.
       IF lv_oncekigun EQ lv_vade.
         gs_collect-gun_dmbtr = gs_vade-dmbtr.
@@ -82,7 +84,74 @@ DATA: lv_vade LIKE sy-datum.
 
   ENDLOOP.
 ```
-![](ZFI_PRJ_TB01.png)
+Eğer `lv_vade` adlı değişken, şimdiki tarihten küçükse (geçmiş bir tarihse), o zaman `gs_vade` adlı yapıda yer alan vade alanına "X" ataması yapılır.
+Eğer vade alanı "X" olarak işaretlenmişse, bu kayıt için belirli bir koşul sağlanmış demektir. Bu durumda, bu kaydın bazı bilgileri, `gs_collect` adlı yapıya aktarılır.
+Daha sonra, `gs_collect` adlı yapı, belirli tarih aralıklarına göre ayrılır ve her aralık için, o aralıktaki toplam **dmbtr** (Alacak/Borç Tutarı) hesaplanır ve ilgili değişkene atanır.
+Son olarak, hesaplanan bilgiler, `gt_collect` adlı tabloya eklenir.
+
+
+
+**CREDIBILITE**
+
+```
+ READ TABLE gt_tbl02 INTO gs_tbl02 WITH KEY zz_cre_kural = 'ZCR0001'.
+    IF sy-subrc EQ 0.
+      IF gs_collect-gun_dmbtr GT gs_tbl02-zz_cre_tutar1.
+        gs_tbl01-zz_credibilite = gs_tbl01-zz_credibilite + gs_tbl02-zz_cre_puan.
+
+      ENDIF.
+
+
+    ENDIF.
+```
+
+Bu kod, `gt_tbl02"` tablosundan belirli bir kurala sahip satırları okur ve belirli bir koşulu karşıladıklarında, `gs_tbl01-zz_credibilite` değişkenine ek bir puan ekler.Böyle toplam 10 kural mevcuttur.
+
+
+
+
+- Son olarak **SE38**'de [`ZFI_PRJ_COD02`](https://github.com/frkylmz5234/SAP-ABAP/blob/main/ZFI_PRJ_COD02)'de **ALV** raporlama işlemi yapılacaktır.
+
+### Giriş Parametresi
+
+```
+SELECTION-SCREEN BEGIN OF BLOCK al WITH FRAME TITLE TEXT-001.
+  PARAMETERS: p_budat TYPE bsid-budat OBLIGATORY.
+SELECTION-SCREEN END OF BLOCK al.
+```
+
+Bu kod, programın kullanıcı tarafından belirlenen bir tarih değerine göre çalışmasını sağlar ve kullanıcının bu tarihi girmesi için bir seçim ekranı oluşturur.Ayrıca, "**OBLIGATORY**" özelliği belirtilerek, kullanıcının bu parametreyi girme zorunluluğu getirilir.
+
+
+
+- **'DD_DOMVALUES_GET'** fonksiyonu ile bir **ALV** raporundaki hesaplar bölümünü görselleştirmek için kullanılabilir.Aşşağıda ki kodda `gt_hesapdrm` değişkeninde ki sayısal değerlerin tanımı `hesapdrm_tnm` adlı değişkene atanarak kullanılmıştır.
+
+```
+ CALL FUNCTION 'DD_DOMVALUES_GET'
+    EXPORTING
+      domname              = 'ZZ_DO_HESAPDRM'
+     TEXT                 = 'X'
+     LANGU                = sy-langu
+
+    tables
+      dd07v_tab            = gt_hesapdrm
+   EXCEPTIONS
+     WRONG_TEXTFLAG       = 1
+     OTHERS               = 2
+            .
+ LOOP AT gt_alv01 INTO gs_alv01.
+      READ TABLE gt_hesapdrm
+       INTO gs_hesapdrm
+        WITH KEY domvalue_l = gs_alv01-zz_hesapdrm.
+          gs_alv01-hesapdrm_tnm = gs_hesapdrm-ddtext.
+```
+
+
+
+### OUTPUT
+
+- Son olarakda yazılan kodun çıktısı olan,firmaların yüksek riskten düşük riske doğru sıralanmış ALV gösterimi:
+![OUTPUT](OUTPUT.png)
 
 
 
