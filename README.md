@@ -149,7 +149,7 @@ Bu kod, programın kullanıcı tarafından belirlenen bir tarih değerine göre 
 
 
 ### OUTPUT
-
+ Veriler gerçek veri değildir!!!
 - Son olarakda yazılan kodun çıktısı olan,firmaların yüksek riskten düşük riske doğru sıralanmış ALV gösterimi:
 ![OUTPUT](OUTPUT.png)
 
